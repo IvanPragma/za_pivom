@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:15
+    container_name: bot_postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: bot_user
+      POSTGRES_PASSWORD: sosikt4rf*sdid
+      POSTGRES_DB: bot_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bot_user -d bot_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  bot:
+    build: .
+    container_name: bot_app
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - DATABASE_URL=postgresql+asyncpg://bot_user:sosikt4rf*sdid@db:5432/bot_db
+      - MANAGER_URL=${MANAGER_URL}
+      - LOGGING_SUPERGROUP_ID=${LOGGING_SUPERGROUP_ID}
+      - ADMIN_IDS=${ADMIN_IDS}
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+      
+    # healthcheck для бота не нужен, так как нет веб-сервера
+
+volumes:
+  postgres_data:
