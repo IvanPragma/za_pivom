@@ -1,4 +1,4 @@
 {
-    "max_places": 10,
-    "fake_occupied": 1
+    "max_places": 20,
+    "fake_occupied": 9
 }
