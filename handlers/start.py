@@ -4,10 +4,6 @@ from aiogram.filters import Command
 from keyboards.inline import get_main_menu, get_admin_menu
 from conf import ADMIN_IDS
 from middlewares.helpers import forward_bot_message_to_user_topic
-from utils.config import get_remaining_places, get_max_places
-from database.base import get_session
-from database.models import User, Payment
-from sqlalchemy import select, func
 
 router = Router()
 
@@ -15,31 +11,7 @@ router = Router()
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     """Обработчик команды /start"""
-    # Получаем количество пользователей с подпиской
-    session = await get_session()
-    try:
-        # Считаем уникальные подписки (не платежи)
-        users_with_subscription = await session.scalar(
-            select(func.count(func.distinct(User.id)))
-            .select_from(User)
-            .join(Payment, User.id == Payment.user_id)
-            .where(Payment.status == "paid")
-        ) or 0
-        
-        # Получаем оставшиеся места
-        remaining_places = get_remaining_places() - users_with_subscription
-        
-        # Формируем текст с счетчиком мест
-        # Получаем максимальное количество мест из конфига
-        max_places = get_max_places()
-        places_text = f"🔥 Осталось мест: {remaining_places}/{max_places}"
-        if remaining_places <= 5:
-            places_text += " ⚠️"
-        elif remaining_places <= 10:
-            places_text += " ⚡"
-            
-    finally:
-        await session.close()
+    places_text = "🔥 Последние места на доп. набор!"
     
     welcome_text = (
         f"{places_text}\n\n"
@@ -62,31 +34,7 @@ async def cmd_start(message: Message):
 @router.callback_query(F.data == "back_to_main")
 async def back_to_main(callback: CallbackQuery):
     """Возврат в главное меню"""
-    # Получаем количество пользователей с подпиской
-    session = await get_session()
-    try:
-        # Считаем уникальные подписки (не платежи)
-        users_with_subscription = await session.scalar(
-            select(func.count(func.distinct(User.id)))
-            .select_from(User)
-            .join(Payment, User.id == Payment.user_id)
-            .where(Payment.status == "paid")
-        ) or 0
-        
-        # Получаем оставшиеся места
-        remaining_places = get_remaining_places() - users_with_subscription
-        
-        # Формируем текст с счетчиком мест
-        # Получаем максимальное количество мест из конфига
-        max_places = get_max_places()
-        places_text = f"🔥 Осталось мест: {remaining_places}/{max_places}"
-        if remaining_places <= 5:
-            places_text += " ⚠️"
-        elif remaining_places <= 10:
-            places_text += " ⚡"
-            
-    finally:
-        await session.close()
+    places_text = "🔥 Последние места на доп. набор!"
     
     welcome_text = (
         f"{places_text}\n\n"
